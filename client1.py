@@ -97,8 +97,7 @@ while True:
                 try:
                     client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
                 except:
-                    print("Client Error")
-                    ##TODO: check if needed pa       
+                    print("Client Error")   
             else:
                 print(PARAMETER_ERROR)
 
@@ -112,7 +111,7 @@ while True:
                 try:
                     client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
                 except:
-                    print("error")      
+                    print("Client Error")      
             else:
                 print(PARAMETER_ERROR)
 
@@ -128,7 +127,7 @@ while True:
                 try:
                     client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
                 except:
-                    print("error")
+                    print("Client Error")
             else:
                 print(PARAMETER_ERROR)
         else:

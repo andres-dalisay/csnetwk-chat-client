@@ -7,11 +7,11 @@ CONNECTION_ERROR = "Error: Connection to the Message Board Server has failed! Pl
 PARAMETER_ERROR = "Error: Command parameters do not match or is not allowed."
 DISCONNECTION_ERROR = "Error: Disconnection failed. Please connect to the server first."
 COMMAND_ERROR = "Error: Command not found."
-HELP = "Command List:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/all <message>\n/msg <handle> <message>\n/?"
+JOIN_ERROR = "Error: You are already connected to a server."
+HELP = "Command List:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/all <message>\n/msg <handle> <message>\n/?\n"
 
 
 connected = False
-registered = False
 handle = ""
 
 clientIP = socket.gethostbyname(socket.gethostname())
@@ -26,7 +26,6 @@ def receive():
             response, server = client.recvfrom(1024)
             res = json.loads(response.decode())
             print(res["message"])
-            
         except:
             pass  
     
@@ -57,12 +56,9 @@ while True:
                     commandJSON = json.dumps(commandDict)
                     try:
                         client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
-                        # response, server = client.recvfrom(1024)
                     except:
                         print(CONNECTION_ERROR)
                     else:
-                    #     res = json.loads(response.decode())
-                    #     print(res["message"])
                         connected = True
             else:
                 print(COMMAND_ERROR)
@@ -76,7 +72,10 @@ while True:
         commandBody = message[1:]
         splitBody = commandBody.split(" ", 1)
 
-        if (splitBody[0] == "leave"):
+        if(splitBody[0] == "join"):
+            print(JOIN_ERROR)
+
+        elif (splitBody[0] == "leave"):
             if (len(splitBody) == 1):
                 commandDict = {"command":"leave"}
                 commandJSON = json.dumps(commandDict)
@@ -88,36 +87,22 @@ while True:
                 else:
                     print("Connection closed. Thank you!")
                     connected = False
-                    registered = False
             else:
                 print(PARAMETER_ERROR)
         
-        if (splitBody[0] == "register" and registered == False): 
+        elif (splitBody[0] == "register"): 
             if (len(splitBody) == 2 and len(splitBody[1].split(" ")) == 1):
                 commandDict = {"command":"register", "handle":splitBody[1]}
                 commandJSON = json.dumps(commandDict)
                 try:
                     client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
-                    # response, server = client.recvfrom(1024)
                 except:
                     print("Client Error")
-                    ##TODO: check if needed pa
-                else:
-                    # res = json.loads(response.decode())
-                    
-                    # if res["command"] == "error":
-                    #     print(res["message"])
-                    # else:
-                        registered = True
-                    #     print(res["message"])
-                        
+                    ##TODO: check if needed pa       
             else:
                 print(PARAMETER_ERROR)
 
-        elif (splitBody[0] == "register" and registered == True):
-            print("Error: You are already registered!")
-
-        if (splitBody[0] == "all"):
+        elif (splitBody[0] == "all"):
             if (len(splitBody) == 2):
                 msg = splitBody[1]
                 
@@ -126,32 +111,27 @@ while True:
 
                 try:
                     client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
-                    # response, server = client.recvfrom(1024)
                 except:
-                    print("error")
-                # else:
-                    # res = json.loads(response.decode())
-                    # print(res["message"])       
+                    print("error")      
             else:
                 print(PARAMETER_ERROR)
 
-        if (splitBody[0] == "?"):
+        elif (splitBody[0] == "?"):
             print(HELP)
         
-        if (splitBody[0] == "msg"):
+        elif (splitBody[0] == "msg"):
             params = splitBody[1].split(" ", 1)
             if (len(params) == 2):
-                commandDict = {"command":"register", "handle": params[0], "message": params[1]}
+                commandDict = {"command":"msg", "handle": params[0], "message": params[1]}
                 commandJSON = json.dumps(commandDict)
 
                 try:
                     client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
-                    # response, server = client.recvfrom(1024)
                 except:
                     print("error")
-                # else:
-                    # print(response.decode())
             else:
                 print(PARAMETER_ERROR)
+        else:
+            print(COMMAND_ERROR)
     else:
         print(COMMAND_ERROR)

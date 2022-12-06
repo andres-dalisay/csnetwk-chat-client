@@ -54,6 +54,14 @@ def broadcast():
                 
                 elif msg["command"] == "leave":
                     print(message.decode())
+                    print(client)
+                    print(clients)
+                    key_list=list(users.keys())
+                    val_list=list(users.values())
+                    ind=val_list.index(client[1])
+                    key = key_list[ind]   
+                    del users[key]
+                    clients.remove(client)
                 
                 elif msg["command"] == "register":
                     name = msg["handle"]

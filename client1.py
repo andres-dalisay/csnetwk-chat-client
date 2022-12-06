@@ -81,11 +81,14 @@ while True:
                 commandJSON = json.dumps(commandDict)
                 try:
                     client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
+                    client.shutdown(socket.SHUT_RDWR)
                     client.close()
                 except:
                     print("Error: Disconnection failed.")
                 else:
                     print("Connection closed. Thank you!")
+                    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    client.bind((clientIP, clientPort))
                     connected = False
             else:
                 print(PARAMETER_ERROR)

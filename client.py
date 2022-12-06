@@ -3,6 +3,8 @@ import threading
 import random
 import json
 
+serverIp = "127.0.0.1"
+
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
@@ -23,15 +25,16 @@ while True:
     if message.startswith("/"):
         if message.startswith("/join"):
             ipPort = message[message.index(" ")+1:]
-            split = ipPort.split()
-            ip = split[0]
-            port = split[1]
-            print(ip)
-            client.bind((ip, int(port)))
-            x = {"command":"join"}
-            y = json.dumps(x)
-            client.sendto(y.encode(), (ip, int(port)))
-            #print("Connection to the Message Board Server is successful!")
+            ip = ipPort.split(" ")[0]
+            port = ipPort.split(" ")[1]
+            if ip == serverIp:
+                client.bind((ip, int(port)))
+                x = {"command":"join"}
+                y = json.dumps(x)  
+                client.sendto(y.encode(), (ip, int(port)))
+                print("Connection to the Message Board Server is successful!")
+            else:
+                print("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.")
             
         elif message.startswith("/leave"):
             print("Connection closed. Thank you!")

@@ -12,7 +12,7 @@ def receive():
     while True:
         try:
             message, addr = server.recvfrom(1024)
-            print(message.decode())
+            print(message.decode(), 1)
             messages.put((message, addr))
         except:
             pass
@@ -21,14 +21,14 @@ def broadcast():
     while True:
         while not messages.empty():
             message, addr = messages.get()
-            print(message.decode()) # messages are printed in the server terminal
+            print(message.decode(), 24) # messages are printed in the server terminal
             if addr not in clients:
                 clients.append(addr)
             for client in clients:
                 try:
                     if message.decode().startswith("/join "):
                         name = message.decode()[message.decode().index(" ")+1:]
-                        print(name)
+                        print(name, 3)
                         server.sendto(f"Welcome {name}!".encode(), client)
                     else:
                         server.sendto(message, client)

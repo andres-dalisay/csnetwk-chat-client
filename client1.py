@@ -1,6 +1,7 @@
 import socket
 import json
 import random
+import threading
 
 CONNECTION_ERROR = "Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number."
 PARAMETER_ERROR = "Error: Command parameters do not match or is not allowed."
@@ -16,9 +17,24 @@ handle = ""
 clientIP = socket.gethostbyname(socket.gethostname())
 clientPort = random.randint(8000, 9000)
 
+client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+client.bind((clientIP, clientPort))
+
+def receive():
+    while True:
+        try:
+            response, server = client.recvfrom(1024)
+            res = json.loads(response.decode())
+            print(res["message"])
+            
+        except:
+            pass  
+    
+t1 = threading.Thread(target=receive)
+t1.start()
+
 while True:
     while not connected:
-        client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         message = input()
 
         if (message.startswith("/")):
@@ -40,21 +56,20 @@ while True:
                     commandDict = {"command":"join"}
                     commandJSON = json.dumps(commandDict)
                     try:
-                        client.bind((clientIP, clientPort))
                         client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
-                        response, server = client.recvfrom(1024)
+                        # response, server = client.recvfrom(1024)
                     except:
                         print(CONNECTION_ERROR)
                     else:
-                        res = json.loads(response.decode())
-                        print(res["message"])
+                    #     res = json.loads(response.decode())
+                    #     print(res["message"])
                         connected = True
             else:
                 print(COMMAND_ERROR)
         else:
             print(COMMAND_ERROR)
 
-
+    
     message = input()
 
     if (message.startswith("/")):
@@ -83,18 +98,18 @@ while True:
                 commandJSON = json.dumps(commandDict)
                 try:
                     client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
-                    response, server = client.recvfrom(1024)
+                    # response, server = client.recvfrom(1024)
                 except:
                     print("Client Error")
                     ##TODO: check if needed pa
                 else:
-                    res = json.loads(response.decode())
+                    # res = json.loads(response.decode())
                     
-                    if res["command"] == "error":
-                        print(res["message"])
-                    else:
+                    # if res["command"] == "error":
+                    #     print(res["message"])
+                    # else:
                         registered = True
-                        print(res["message"])
+                    #     print(res["message"])
                         
             else:
                 print(PARAMETER_ERROR)
@@ -111,12 +126,12 @@ while True:
 
                 try:
                     client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
-                    response, server = client.recvfrom(1024)
+                    # response, server = client.recvfrom(1024)
                 except:
                     print("error")
-                else:
-                    res = json.loads(response.decode())
-                    print(res["message"])       
+                # else:
+                    # res = json.loads(response.decode())
+                    # print(res["message"])       
             else:
                 print(PARAMETER_ERROR)
 
@@ -131,13 +146,12 @@ while True:
 
                 try:
                     client.sendto(commandJSON.encode(), (connectionIP, connectionPort))
-                    response, server = client.recvfrom(1024)
+                    # response, server = client.recvfrom(1024)
                 except:
                     print("error")
-                else:
-                    print(response.decode())
+                # else:
+                    # print(response.decode())
             else:
                 print(PARAMETER_ERROR)
     else:
         print(COMMAND_ERROR)
-    

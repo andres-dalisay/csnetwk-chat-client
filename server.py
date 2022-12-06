@@ -1,18 +1,32 @@
 import socket
 import threading
 import queue
+import random
+import json
+
+DISCONNECTION_ERROR = "Error: Disconnection failed. Please connect to the server first."
+REGISTRATION_ERROR = "Error: Registration failed. Handle or alias already exists."
+DIRECT_MESSAGE_ERROR = "Error: Handle or alias not found."
+COMMAND_ERROR = "Error: Command not found."
+PARAMETER_ERROR = "Error: Command parameters do not match or is not allowed."
 
 messages = queue.Queue()
 clients = []
+users = dict()
+
+serverIP = socket.gethostbyname(socket.gethostname())
+serverPort = 9999
+
+print("Server IP: ", serverIP)
+print("Server Port: ", serverPort)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server.bind(("127.0.0.1", 9999))
+server.bind((serverIP, serverPort))
 
 def receive():
     while True:
         try:
             message, addr = server.recvfrom(1024)
-            print(message.decode(), 1)
             messages.put((message, addr))
         except:
             pass
@@ -21,19 +35,47 @@ def broadcast():
     while True:
         while not messages.empty():
             message, addr = messages.get()
-            print(message.decode(), 24) # messages are printed in the server terminal
+
+            msg = json.loads(message.decode())
+            
             if addr not in clients:
                 clients.append(addr)
-            for client in clients:
-                try:
-                    if message.decode().startswith("/join "):
-                        name = message.decode()[message.decode().index(" ")+1:]
-                        print(name, 3)
-                        server.sendto(f"Welcome {name}!".encode(), client)
+            
+            client = clients[clients.index(addr)]
+            # for client in clients:
+            try:
+                if msg["command"] == "join":
+                    print(message.decode())
+                    commandDict = {"command":"success", "message":"Connection to the Message Board Server is successful!"}
+                    commandJSON = json.dumps(commandDict)
+                    server.sendto(commandJSON.encode(), client)
+                
+
+                elif msg["command"] == "register":
+                    name = msg["handle"]
+                    if len(users) == 0:
+                        print(message.decode())
+                        users[name] = client[1]
+                        commandDict = {"command":"success", "message":f"Welcome {name}!"}
+                        commandJSON = json.dumps(commandDict)
+                        server.sendto(commandJSON.encode(), client)
                     else:
-                        server.sendto(message, client)
-                except:
-                    clients.remove(client)
+                        if name in users.keys():
+                            commandDict = {"command":"error", "message":REGISTRATION_ERROR}
+                            print(commandDict)
+                            commandJSON = json.dumps(commandDict)
+                            server.sendto(commandJSON.encode(), client)
+                        else:
+                            print(message.decode())
+                            users[name] = client[1]
+                            commandDict = {"command":"success", "message":f"Welcome {name}!"}
+                            commandJSON = json.dumps(commandDict)
+                            server.sendto(commandJSON.encode(), client)
+                    
+                else:
+                    server.sendto(message, client)
+            except:
+                clients.remove(client)
 
 
 t1 = threading.Thread(target=receive)
@@ -41,33 +83,3 @@ t2 = threading.Thread(target=broadcast)
 
 t1.start()
 t2.start()
-
-{
-    # localIP     = "127.0.0.1"
-# localPort   = 20001
-# bufferSize  = 1024
-
-# msgFromServer       = "Hello UDP Client"
-# bytesToSend         = str.encode(msgFromServer)
-
-# # Create a datagram socket
-# UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-
-# # Bind to address and ip
-# UDPServerSocket.bind((localIP, localPort))
-
-# print("UDP server up and listening")
-
-# # Listen for incoming datagrams
-# while(True):
-#     bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-#     message = bytesAddressPair[0]
-#     address = bytesAddressPair[1]
-#     clientMsg = "Message from Client:{}".format(message)
-#     clientIP  = "Client IP Address:{}".format(address)
-#     print(clientMsg)
-#     print(clientIP)
-
-#     # Sending a reply to client
-#     UDPServerSocket.sendto(bytesToSend, address)
-}

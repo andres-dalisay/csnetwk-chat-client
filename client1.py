@@ -6,6 +6,7 @@ CONNECTION_ERROR = "Error: Connection to the Message Board Server has failed! Pl
 PARAMETER_ERROR = "Error: Command parameters do not match or is not allowed."
 DISCONNECTION_ERROR = "Error: Disconnection failed. Please connect to the server first."
 COMMAND_ERROR = "Error: Command not found."
+HELP = "Command List:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/all <message>\n/msg <handle> <message>\n/?"
 
 
 connected = False
@@ -27,7 +28,7 @@ while True:
             if (splitBody[0] == "leave"):
                 print(DISCONNECTION_ERROR)
             elif (splitBody[0] == "?"):
-                print("help")
+                print(HELP)
             elif (splitBody[0] == "register" or splitBody[0] == "all" or splitBody[0] == "msg"):
                 print("Error: In order to use this command, please connect to a server first.")
             elif (splitBody[0] == "join"):
@@ -97,6 +98,7 @@ while True:
                         
             else:
                 print(PARAMETER_ERROR)
+
         elif (splitBody[0] == "register" and registered == True):
             print("Error: You are already registered!")
 
@@ -113,10 +115,13 @@ while True:
                 except:
                     print("error")
                 else:
-                    print(response.decode())        
+                    res = json.loads(response.decode())
+                    print(res["message"])       
             else:
                 print(PARAMETER_ERROR)
-            
+
+        if (splitBody[0] == "?"):
+            print(HELP)
         
         if (splitBody[0] == "msg"):
             params = splitBody[1].split(" ", 1)

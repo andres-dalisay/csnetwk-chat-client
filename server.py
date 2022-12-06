@@ -42,7 +42,7 @@ def broadcast():
                 clients.append(addr)
             
             client = clients[clients.index(addr)]
-            # for client in clients:
+
             try:
                 if msg["command"] == "join":
                     print(message.decode())
@@ -50,27 +50,31 @@ def broadcast():
                     commandJSON = json.dumps(commandDict)
                     server.sendto(commandJSON.encode(), client)
                 
-
+                elif msg["command"] == "leave":
+                    print(message.decode())
+                
                 elif msg["command"] == "register":
                     name = msg["handle"]
-                    if len(users) == 0:
+                    if name in users.keys():
+                        commandDict = {"command":"error", "message":REGISTRATION_ERROR}
+                        print(commandDict)
+                        commandJSON = json.dumps(commandDict)
+                        server.sendto(commandJSON.encode(), client)
+                    else:
                         print(message.decode())
                         users[name] = client[1]
                         commandDict = {"command":"success", "message":f"Welcome {name}!"}
                         commandJSON = json.dumps(commandDict)
                         server.sendto(commandJSON.encode(), client)
-                    else:
-                        if name in users.keys():
-                            commandDict = {"command":"error", "message":REGISTRATION_ERROR}
-                            print(commandDict)
-                            commandJSON = json.dumps(commandDict)
-                            server.sendto(commandJSON.encode(), client)
-                        else:
-                            print(message.decode())
-                            users[name] = client[1]
-                            commandDict = {"command":"success", "message":f"Welcome {name}!"}
-                            commandJSON = json.dumps(commandDict)
-                            server.sendto(commandJSON.encode(), client)
+                
+                elif msg["command"] == "all":
+                    print(message.decode())
+                    text = msg["message"]
+                    key = {i for i in users if users[i] == client[1]}
+                    commandDict = {"command":"success", "message":f"{key}: {text}"}
+                    commandJSON = json.dumps(commandDict)
+                    for n in clients:
+                        server.sendto(commandJSON.encode(), n)
                     
                 else:
                     server.sendto(message, client)
